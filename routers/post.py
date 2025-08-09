@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models.post import Post
-from schemas.post import PostMapOut, PostOut
+from schemas.post import PostMapOut, PostOut, PostCreate  # ← PostCreate 추가
 from typing import List
 
 router = APIRouter()
@@ -43,3 +43,34 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")  # 없는 ID 처리
     return post
+
+
+@router.post("/posts")
+def create_post(request: PostCreate, db: Session = Depends(get_db)):
+    new_post = Post(
+        image_url=request.image_urls,  # 요청 키 → DB 컬럼
+        title=request.title,
+        content=request.content,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        tag=request.tags               # 요청 키 → DB 컬럼
+    )
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return {"id": str(new_post.id)}
+
+
+@router.post("/posts/{post_id}/like")
+def increase_likes(post_id: int, db: Session = Depends(get_db)):
+    # 게시글 조회
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # 좋아요 1 증가
+    post.likes += 1
+    db.commit()
+    db.refresh(post)  # 변경된 데이터 다시 읽기
+
+    return {"likes": post.likes}

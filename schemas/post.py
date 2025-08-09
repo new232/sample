@@ -23,3 +23,12 @@ class PostOut(BaseModel):
     content: str
     likes: int
     model_config = ConfigDict(from_attributes=True)
+
+
+class PostCreate(BaseModel):
+    image_urls: str
+    title: str
+    content: str
+    latitude: float
+    longitude: float
+    tags: str
