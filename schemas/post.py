@@ -1,5 +1,5 @@
 # schemas/post.py
-from pydantic import BaseModel, ConfigDict  # BaseModel: Pydantic 모델 정의용, ConfigDict: 설정 지정용
+from pydantic import BaseModel, ConfigDict, HttpUrl  # BaseModel: Pydantic 모델 정의용, ConfigDict: 설정 지정용
 from typing import Optional
 
 # 📌 지도 조회 (전체 or 태그 기반) 시 사용하는 응답 모델
@@ -19,5 +19,7 @@ class PostOut(BaseModel):
     latitude: float     # 위도
     longitude: float    # 경도
     tag: str            # 태그
-
+    image_url:  str # 이미지
+    content: str
+    likes: int
     model_config = ConfigDict(from_attributes=True)

@@ -13,7 +13,7 @@ def get_db():
     finally:
         db.close()
 
- ✅ 게시글 신고 API
+# ✅ 게시글 신고 API
 @router.post("/posts/{post_id}/report")
 def report_post(post_id: int, db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
