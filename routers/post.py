@@ -36,15 +36,6 @@ def get_posts_by_tag(tag: str = Query(...), db: Session = Depends(get_db)):
     return posts
 
 
-# 🔎 단일 게시글 상세 조회 (ID 기반)
-@router.get("/posts/{post_id}", response_model=PostOut)
-def get_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == post_id).first()
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")  # 없는 ID 처리
-    return post
-
-
 @router.post("/posts")
 def create_post(request: PostCreate, db: Session = Depends(get_db)):
     new_post = Post(
@@ -74,3 +65,23 @@ def increase_likes(post_id: int, db: Session = Depends(get_db)):
     db.refresh(post)  # 변경된 데이터 다시 읽기
 
     return {"likes": post.likes}
+
+
+@router.get("/posts/trend", response_model=List[PostOut])
+def get_trend_posts(db: Session = Depends(get_db)):
+    posts = (
+        db.query(Post)
+        .filter(Post.likes >= 10)
+        .filter(Post.latitude.isnot(None), Post.longitude.isnot(None))
+        .order_by(Post.likes.desc(), Post.id.desc())
+        .all()
+    )
+    return posts
+
+# 🔎 단일 게시글 상세 조회 (ID 기반)
+@router.get("/posts/{post_id}", response_model=PostOut)
+def get_post(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")  # 없는 ID 처리
+    return post
